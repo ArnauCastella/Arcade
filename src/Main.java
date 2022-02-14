@@ -9,7 +9,7 @@ public class Main {
                 .setWordsColumns(12)
                 .setWordsRows(12)
 // Optional, to set a specific input instead of getting a random one
-                .setSeed(42)
+                .setSeed(40)
 // DemoLabyrinthSolver implements LabyrinthSolver
                 .setLabyrinthSolver(new DemoLabyrinthSolver())
 // DemoWordsSolver implements WordsSolver
