@@ -2,6 +2,7 @@ import edu.salleurl.arcade.labyrinth.model.enums.Cell;
 import edu.salleurl.arcade.labyrinth.model.enums.Direction;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -9,9 +10,11 @@ public class LabyrinthConfig implements Comparable<LabyrinthConfig> {
     private final List<Direction> config;
     private int i, j; //Partial position
     private int exitI, exitJ;
+    private final boolean[][] visited;
 
     public LabyrinthConfig(Cell[][] labyrinth) {
         config = new ArrayList<>();
+        visited = new boolean[labyrinth.length][labyrinth.length];
 
         boolean found = false;
         for(i = 0; i < labyrinth.length && !found; ++i) {
@@ -21,8 +24,9 @@ public class LabyrinthConfig implements Comparable<LabyrinthConfig> {
                 }
             }
         }
-        this.i--;
-        this.j--;
+        i--;
+        j--;
+        visited[i][j] = true;
 
         found = false;
         for(exitI = 0; exitI < labyrinth.length && !found; ++exitI) {
@@ -42,6 +46,7 @@ public class LabyrinthConfig implements Comparable<LabyrinthConfig> {
         this.j = that.j;
         this.exitI = that.exitI;
         this.exitJ = that.exitJ;
+        this.visited = Arrays.stream(that.visited).map(boolean[]::clone).toArray(boolean[][]::new);
     }
 
     public Iterable<LabyrinthConfig> expand() {
@@ -56,7 +61,10 @@ public class LabyrinthConfig implements Comparable<LabyrinthConfig> {
                 case LEFT -> successor.j--;
                 case RIGHT -> successor.j++;
             }
-            successors.add(successor);
+            if (!successor.visited[successor.i][successor.j]) {
+                successor.visited[successor.i][successor.j] = true;
+                successors.add(successor);
+            }
         }
         return successors;
     }
@@ -64,16 +72,6 @@ public class LabyrinthConfig implements Comparable<LabyrinthConfig> {
     //isSolution() implemented in LabyrinthValidator.validate()
 
     public boolean completable(Cell[][] labyrinth) {
-        if (this.config.size() > 1) {
-            Direction last = config.get(config.size()-1);
-            Direction secondLast = config.get(config.size()-2);
-            if ((last == Direction.LEFT && secondLast == Direction.RIGHT) ||
-                    (last == Direction.RIGHT && secondLast == Direction.LEFT) ||
-                    (last == Direction.DOWN && secondLast == Direction.UP) ||
-                    (last == Direction.UP && secondLast == Direction.DOWN)) {
-                return false;
-            }
-        }
         try {
             return labyrinth[this.i][this.j] != Cell.WALL;
         } catch (IndexOutOfBoundsException e) {
@@ -92,5 +90,9 @@ public class LabyrinthConfig implements Comparable<LabyrinthConfig> {
 
     public List<Direction> getConfig() {
         return config;
+    }
+
+    public boolean isAtEnd(Cell[][] labyrinth) {
+        return labyrinth[i][j] == Cell.EXIT;
     }
 }
